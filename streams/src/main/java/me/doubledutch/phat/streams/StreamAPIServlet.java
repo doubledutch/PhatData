@@ -33,9 +33,17 @@ public class StreamAPIServlet extends HttpServlet{
 			Writer out=response.getWriter();
 			response.setContentType("application/json");
 			String uriPath=request.getRequestURI().substring(request.getServletPath().length());
-			if(uriPath.startsWith("/"))uriPath=uriPath.substring(1);
+			if(uriPath.startsWith("/"))uriPath=uriPath.substring(1).trim();
 			String[] splitPath=uriPath.split("/");
-			if(splitPath.length==2){
+			if(uriPath.length()==0){
+				// List streams
+				JSONArray result=new JSONArray();
+				for(Stream stream:streamHandler.getStreams()){
+					result.put(stream.toJSON());
+				}
+				out.write(result.toString());
+				return;
+			}else if(splitPath.length==2){
 				String topic=splitPath[0];
 				String range=splitPath[1];
 				if(range.indexOf("-")==-1){

@@ -19,18 +19,16 @@ public class StreamServer implements Runnable{
 
 	private Server server;
 	private StreamHandler streamHandler;
+	private TaskHandler taskHandler;
 	
 	// Configuration 
 	private String bind="*";
 	private int port=13400;
-	private String location="./";
+	private String location="./data/";
+	private String importLocation="./import/";
+	private String exportLocation="./export/";
 	private int batch=32;
 	private int lag=25;
-
-	private String notificationsURL;
-	private int notificationsLag=1000;
-	private String offloadURL;
-	private int offloadSize=1000;
 
 	public StreamServer(String filename){
 		try{
@@ -44,6 +42,14 @@ public class StreamServer implements Runnable{
 			// Start the service
 			streamHandler=new StreamHandler(location,batch,lag);
 			StreamAPIServlet.setStreamHandler(streamHandler);
+			
+			TaskHandler.setPaths(importLocation,exportLocation);
+			Task.setPaths(importLocation,exportLocation);
+			taskHandler=new TaskHandler(streamHandler);
+
+			TaskAPIServlet.setTaskHandler(taskHandler);
+			TaskAPIServlet.setStreamHandler(streamHandler);
+			TaskAPIServlet.setPaths(importLocation,exportLocation);
 			startServlets();
 			// Setup shutdown hook
 			Runtime.getRuntime().addShutdownHook(new Thread(this));
@@ -83,6 +89,12 @@ public class StreamServer implements Runnable{
 			if(obj.has("location")){
 				location=obj.getString("location");
 			}
+			if(obj.has("importLocation")){
+				importLocation=obj.getString("importLocation");
+			}
+			if(obj.has("exportLocation")){
+				exportLocation=obj.getString("exportLocation");
+			}
 			if(obj.has("commit")){
 				obj=obj.getJSONObject("commit");
 				if(obj.has("batch")){
@@ -93,24 +105,6 @@ public class StreamServer implements Runnable{
 				}
 			}
 		}
-		if(config.has("notifications")){
-			JSONObject obj=config.getJSONObject("notifications");
-			if(obj.has("url")){
-				notificationsURL=obj.getString("url");
-			}
-			if(obj.has("lag")){
-				notificationsLag=obj.getInt("lag");
-			}
-		}
-		if(config.has("offload")){
-			JSONObject obj=config.getJSONObject("offload");
-			if(obj.has("url")){
-				offloadURL=obj.getString("url");
-			}
-			if(obj.has("size")){
-				offloadSize=obj.getInt("size");
-			}
-		}
 		// 2. Overlay environment variables
 		Map<String,String>env=System.getenv();
 		if(env.containsKey("BIND")){
@@ -118,6 +112,15 @@ public class StreamServer implements Runnable{
 		}
 		if(env.containsKey("PORT")){
 			port=Integer.parseInt(env.get("PORT"));
+		}
+		if(env.containsKey("LOCATION")){
+			location=env.get("LOCATION");
+		}
+		if(env.containsKey("IMPORTLOCATION")){
+			importLocation=env.get("IMPORTLOCATION");
+		}
+		if(env.containsKey("EXPORTLOCATION")){
+			exportLocation=env.get("EXPORTLOCATION");
 		}
 	}
 
@@ -157,6 +160,9 @@ public class StreamServer implements Runnable{
 			servletHolder = new ServletHolder(StreamAPIServlet.class);
 			handler.addServlet(servletHolder, "/stream/*");
 
+			servletHolder = new ServletHolder(TaskAPIServlet.class);
+			handler.addServlet(servletHolder, "/task/*");
+
 			servletHolder = new ServletHolder(FileServlet.class);
 			handler.addServlet(servletHolder, "/*");
 			FileServlet.sourceFolder="./site";			
@@ -175,8 +181,10 @@ public class StreamServer implements Runnable{
 		String configFile=null;
 		if(args.length==1){ // The only argument accepted for now is the path to a config file
 			configFile=args[0];
+		}else if(args.length==0){
+
 		}else{
-			System.out.println("ERROR! Only one configuration file can be specified");
+			System.out.println("ERROR! Phat Streams must be started with either one or zero configuration files");
 			System.out.println("java -jar streams.jar <configuration file>");
 			System.exit(1);
 		}

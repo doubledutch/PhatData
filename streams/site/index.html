@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PhatData Streams</title>
+  <style type="text/css">
+  body{
+  	font-family:sans-serif;
+  	margin:0px;
+  	background: #FFFFFF;
+  }
+  h1{
+  	font-size: 23px;
+  }
+  p{
+  	font-size:15px;
+  }
+
+  .streams-icon-large {
+  	background-image: url('img/streams_icon_s.png');background-size: contain;
+  	width:72px;height:72px;
+  	display:inline-block;}
+
+  .streams-icon-small {
+  	background-image: url('img/streams_icon_s.png');background-size: contain;
+  	width:36px;height:36px;
+  	display:inline-block;}
+  
+  .header{
+  	background: #FFFFFF;
+  	padding-left:36px;padding-top:36px;
+  	border-bottom:2px solid #DDDDDD;
+  }
+  .content{
+  	margin-left: 84px;
+  	margin-top:10px;
+  	margin-right:84px;
+  }
+  .footer{
+  	padding-top:36px;text-align:center;font-size:12px;
+  }
+  .title{
+  	font-size:26px;
+  	padding-left:12px;
+  	position: relative;
+  	top:-8px;
+  	display: inline-block;
+  }
+  .menu{
+  	padding-left: 48px;
+  }
+
+  .menu-item{
+  	display:inline-block;margin-right:10px;padding-top:10px;
+  	border-bottom:6px solid #FFFFFF;
+  }
+  .menu-item:hover{
+  	background:#EEEEEE;
+  	cursor:pointer;
+  }
+
+  .menu-select{
+  	border-bottom:6px solid #ff1170;
+  }
+
+  .stream{
+  	border:1px solid #DDDDDD;
+  	border-radius: 3px;
+  	margin-bottom:10px;
+  	padding-left:10px;
+  }
+  .task{
+  	border:1px solid #DDDDDD;
+  	border-radius: 3px;
+  	margin-top:10px;
+  	padding-left:10px;
+  	padding-bottom:10px;
+  }
+  </style>
+</head>
+<body>
+<div>
+	<div class="header">
+		<div>
+			<div class="streams-icon-small"></div><div class="title">PhatData Streams</div>
+		</div>
+		<div class="menu" id="menu">
+			
+		</div>
+	</div>
+	<div class="content" id="content">
+	</div>
+	<div class="footer">
+		&copy; 2015 DoubleDutch
+	</div>
+</div>
+<script src="js/immutable.min.js"></script>
+<script src="js/jquery-2.1.4.min.js"></script>
+<script src="js/view_streams.js"></script>
+<script src="js/view_tasks.js"></script>
+<script src="js/view_dashboard.js"></script>
+<script src="js/render.js"></script>
+<script src="js/actions.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -23,6 +23,9 @@ public class FileServlet extends HttpServlet{
 		}else{
 			fileName=sourceFolder+fileName;
 		}
+		if(fileName.endsWith("/")){
+			fileName+="index.html";
+		}
 		if(fileName.indexOf("..")>-1){
 			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 				return;

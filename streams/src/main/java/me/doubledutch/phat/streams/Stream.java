@@ -3,6 +3,7 @@ package me.doubledutch.phat.streams;
 import java.util.concurrent.*;
 import java.util.*;
 import java.io.*;
+import org.json.*;
 
 public class Stream implements Runnable{
 	public final static int LINEAR=0;
@@ -10,7 +11,7 @@ public class Stream implements Runnable{
 	public final static int FLUSH=2;
 	public final static int NONE=3;
 
-	private int write_mode=LINEAR;
+	private int write_mode=SYNC;
 
 	private long MAX_BLOCK_SIZE=32*1024*1024*1024l; // 32 gb block files
 	private long MAX_INDEX_SIZE=50*1000*1000l; // close to 1gb index blocks
@@ -77,9 +78,25 @@ public class Stream implements Runnable{
 		new Thread(this).start();
 	}
 
+	public long getCount(){
+		return commitedLocation+1;
+	}
+
+	public long getSize(){
+		long size=0;
+		for(Block block:blockMap.values()){
+			size+=block.getSize();
+		}
+		return size;
+	}
+
+	public String getTopic(){
+		return topic;
+	}
+
 	private short getFilenameNumber(String filename){
 		// TODO: perhaps replace with regexp since it only happens at startup
-		String numberStr=filename.substring(filename.indexOf("_")+1);
+		String numberStr=filename.substring(filename.lastIndexOf("_")+1);
 		numberStr=numberStr.substring(0,numberStr.indexOf("."));
 		while(numberStr.startsWith("0"))numberStr=numberStr.substring(1);
 		return Short.parseShort(numberStr);
@@ -189,6 +206,10 @@ public class Stream implements Runnable{
 	}
 
 	public void addDocument(Document doc) throws IOException{
+		addDocument(doc,write_mode);
+	}
+
+	public void addDocument(Document doc,int wmode) throws IOException{
 		byte[] data=doc.getData();
 		long location=-1;
 		short blockNumber=currentBlockNumber;
@@ -196,7 +217,7 @@ public class Stream implements Runnable{
 		long offset=0;
 		Index index=null;
 		// TODO: find a way to do this more elegantly instead of a copy pasted code block
-		if(write_mode==LINEAR){
+		if(wmode==LINEAR){
 			synchronized(topic){
 				offset=block.write(data);
 				index=indexMap.get(currentIndexNumber);
@@ -216,7 +237,7 @@ public class Stream implements Runnable{
 			createNewIndex(currentIndexNumber);
 		}
 		doc.setLocation(location);
-		if(write_mode<NONE){
+		if(wmode<NONE){
 			waitForCommit(location);
 		}
 		if(offset+data.length>MAX_BLOCK_SIZE){
@@ -319,5 +340,13 @@ public class Stream implements Runnable{
 			}
 		}
 		return list;
+	}
+
+	public JSONObject toJSON() throws JSONException{
+		JSONObject obj=new JSONObject();
+		obj.put("topic",getTopic());
+		obj.put("count",getCount());
+		obj.put("size",getSize());
+		return obj;
 	}
 }

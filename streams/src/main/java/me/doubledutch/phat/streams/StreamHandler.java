@@ -3,6 +3,7 @@ package me.doubledutch.phat.streams;
 import java.util.concurrent.*;
 import java.util.*;
 import java.io.*;
+import org.json.*;
 
 public class StreamHandler{
 	private String parentFolder;
@@ -14,6 +15,7 @@ public class StreamHandler{
 		MAX_COMMIT_BATCH=batch;
 		MAX_COMMIT_LAG=lag;
 		parentFolder=folder;
+		streamMap=new ConcurrentHashMap<String,Stream>();
 		try{
 			if(!parentFolder.endsWith(File.separator)){
 				parentFolder+=File.separator;
@@ -22,10 +24,16 @@ public class StreamHandler{
 			if(!ftest.exists()){
 				ftest.mkdir();
 			}
+			for(String subFolder:ftest.list()){
+				ftest=new File(parentFolder+subFolder);
+				if(ftest.exists()){
+					getOrCreateStream(subFolder);
+				}
+			}
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		streamMap=new ConcurrentHashMap<String,Stream>();
+		
 	}
 
 	public void stop(){
@@ -38,7 +46,7 @@ public class StreamHandler{
 		}
 	}
 
-	private Stream getOrCreateStream(String topic) throws IOException{
+	public Stream getOrCreateStream(String topic) throws IOException{
 		if(streamMap.containsKey(topic)){
 			return  streamMap.get(topic);
 		}
@@ -48,6 +56,10 @@ public class StreamHandler{
 			}
 		}
 		return streamMap.get(topic);
+	}
+
+	public Stream[] getStreams() throws IOException{
+		return streamMap.values().toArray(new Stream[0]);
 	}
 
 	public Document getDocument(String topic,long location) throws IOException{

@@ -9,13 +9,5 @@
 			"lag":25
 		},
 		"location":"./tmp/"
-	},
-	"notifications":{
-		"url":"http://127.0.0.1/foo/{topic}",
-		"lag":1000
-	},
-	"offload":{
-		"url":"http://127.0.0.1/bar?topic={topic}",
-		"size":1000
 	}
 }
