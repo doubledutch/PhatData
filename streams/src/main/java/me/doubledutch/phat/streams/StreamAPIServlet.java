@@ -43,6 +43,10 @@ public class StreamAPIServlet extends HttpServlet{
 				}
 				out.write(result.toString());
 				return;
+			}else if(splitPath.length==1){
+				String topic=splitPath[0];
+				Stream stream=streamHandler.getOrCreateStream(topic);
+				out.append(stream.toJSON().toString());
 			}else if(splitPath.length==2){
 				String topic=splitPath[0];
 				String range=splitPath[1];
