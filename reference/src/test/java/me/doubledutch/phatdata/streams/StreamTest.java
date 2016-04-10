@@ -60,7 +60,7 @@ public class StreamTest{
 
     private static boolean streamInArray(String str,Stream[] data){
     	for(Stream s:data){
-    		if(s.getTopic().equals(str))return true;
+    		if(s.getTopic().equals(str))return true; 
     	}
     	return false;
     }

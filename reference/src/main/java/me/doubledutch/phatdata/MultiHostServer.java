@@ -37,9 +37,9 @@ public class MultiHostServer implements Runnable{
 			// Start the services
 			streamHandler=new StreamHandler(config.getJSONObject("streams"));
 			service=new Service(streamHandler);
-			/*
-			StreamAPIServlet.setStreamHandler(streamHandler);
 			
+			StreamAPIServlet.setStreamHandler(streamHandler);
+			/*
 			TaskHandler.setPaths(importLocation,exportLocation);
 			Task.setPaths(importLocation,exportLocation);
 			taskHandler=new TaskHandler(streamHandler);
@@ -47,7 +47,8 @@ public class MultiHostServer implements Runnable{
 			TaskAPIServlet.setTaskHandler(taskHandler);
 			TaskAPIServlet.setStreamHandler(streamHandler);
 			TaskAPIServlet.setPaths(importLocation,exportLocation);
-			startServlets();*/
+			*/
+			startServlets(config.getJSONObject("api"));
 			// Setup shutdown hook
 			Runtime.getRuntime().addShutdownHook(new Thread(this));
 			log.info("Ready!");
@@ -80,6 +81,10 @@ public class MultiHostServer implements Runnable{
 		obj.putOnce("commit_batch_size",32);
 		obj.putOnce("commit_batch_timeout",50);
 
+		config.putOnce("api",new JSONObject());
+		obj=config.getJSONObject("api");
+		obj.putOnce("port",8080);
+
 		// 2. Overlay environment variables
 		Map<String,String>env=System.getenv();
 		
@@ -90,20 +95,22 @@ public class MultiHostServer implements Runnable{
 	/**
 	 * Setup and start the Jetty servlet container
 	 */
-	private void startServlets(){
+	private void startServlets(JSONObject config) throws JSONException{
 		try{
-			/*
+			
 			server = new Server();
 			ServerConnector c = new ServerConnector(server);
 			c.setIdleTimeout(15000);
 			c.setAcceptQueueSize(256);
-			c.setPort(port);
-			if(!bind.equals("*")){
-				c.setHost(bind);
-			}
+			c.setPort(config.getInt("port"));
+			// if(!bind.equals("*")){
+			//	c.setHost(bind);
+			// }
 
 			ServletContextHandler handler = new ServletContextHandler(server,"/", true, false);
-			ServletHolder servletHolder = new ServletHolder(StatusServlet.class);
+			ServletHolder servletHolder = new ServletHolder(StreamAPIServlet.class);
+			handler.addServlet(servletHolder, "/stream/*");
+			/*ServletHolder servletHolder = new ServletHolder(StatusServlet.class);
 			handler.addServlet(servletHolder, "/status/*");
 
 			servletHolder = new ServletHolder(StreamAPIServlet.class);
@@ -115,9 +122,9 @@ public class MultiHostServer implements Runnable{
 			servletHolder = new ServletHolder(FileServlet.class);
 			handler.addServlet(servletHolder, "/*");
 			FileServlet.sourceFolder="./site";			
-
+*/
 			server.addConnector(c);
-			server.start();*/
+			server.start();
 		}catch(Exception e){
 			e.printStackTrace();
 		}
