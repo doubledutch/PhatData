@@ -1,0 +1,22 @@
+#!/usr/bin/python
+
+import urllib2
+import json
+import argparse
+import sys
+
+
+parser = argparse.ArgumentParser(description='Read json from stdin map it and output to stdout')
+parser.add_argument('script', help='Script containing map function')
+
+args = parser.parse_args()
+
+execfile(args.script)
+
+#TODO: we should read and write in batches ... maybe collect the input in a list?
+
+for line in sys.stdin:
+	data=json.loads(line)
+	out=pdmap(data)
+	if out is not None:
+		print json.JSONEncoder().encode(out)
