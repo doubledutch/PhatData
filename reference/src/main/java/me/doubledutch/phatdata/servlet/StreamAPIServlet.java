@@ -149,13 +149,13 @@ public class StreamAPIServlet extends HttpServlet{
 						for(Document doc:batch){
 							indexList.put(doc.getLocation());
 						}
-						response.getWriter().append("{\"result\":\"ok\",\"locations\":"+indexList.toString()+"}");
+						response.getWriter().append("{\"location_list\":"+indexList.toString()+"}");
 					}else{
 						JSONObject jsonObj=new JSONObject(postBody);
 						Document doc=new Document(topic,postBody);
 						streamHandler.addDocument(doc);
 						response.setContentType("application/json");
-						response.getWriter().append("{\"result\":\"ok\",\"location\":"+doc.getLocation()+"}");
+						response.getWriter().append("{\"location\":"+doc.getLocation()+"}");
 						// log.info("Document of "+postBody.length()+" bytes added into "+topic+" at location "+doc.getLocation());
 					}
 				}catch(JSONException pe){
