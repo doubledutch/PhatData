@@ -121,9 +121,35 @@ The simplest implementation of web interface might simply get the latest object 
 
 ### 1.4 Partitioned Reduce Function
 
+The partitioned reduce function reduces data in the same way as the regular reduce function, but it also uses a partition function that takes a document as input and returns the partition key for that document. The reduce function will then be called with that event and a separate accumulator for that specific partition.
 
+The reduce service should must store its state in two streams. One that holds only the raw accumulators and one that holds metadata about the current location into the source stream along with the location for the latest accumulators for a set of partition keys. This sounds more complicated than it actually is - so lets look at some sample data.
+
+This is the metadata object. It contains the location the reduce service has read to in the input stream and the location of accumulators in the accumulator stream for two partitions. 
+
+````
+{"location":871601,
+ "partitions":{
+ 	"sessions":98,
+ 	"notifications":104
+ }}
+````
+
+The metadata object does not contain the location of all partition keys! Just for the accumulators that were changed in the latest set of events processed. A reduce service might only store it's snapshot accumulators and metadata object for every 1000  events it reads. The partition keys are thus only for the partitions that saw new data during these 1000 events.
+
+The query part of the partitioned reduce service must thus build up an in memory index of the location of each partition key. When a specific accumulator is requested for a partition, it will look up the latest location for that partition key and go into the accumulator stream to read the actual accumulator.
+
+This is the interface to retrieve an accumulator for a partitioned reduce function.
+
+````
+GET /reduce/:name/:partition
+
+{"foo":"bar"}
+````
 
 ### 1.5 Key Value Store
+
+
 
 ### 1.6 Timeseries Index and Aggregate
 
