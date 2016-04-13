@@ -100,16 +100,28 @@ While the map service initially might sound like the simples, make sure to under
 
 The reduce service reads document from one stream, passes them to a reduce function along with an accumulator object and stores snapshots of the accumulator in another stream.
 
-The specification of the reduce service is purely concerned with the format of these snapshots. They should be in the form of a JSON object with exactly two keys: The last location in the source stream that has been included in this snapshot and the actual accumulator for this snapshot.
+The specification of the reduce service is two fold - the storage of the snapshots and the HTTP based interface to get the latest reduce function.
+
+The snapshots should be in the form of a JSON object with exactly two keys: The last location in the source stream that has been included in this snapshot and the actual accumulator for this snapshot.
 
 ````
 {"location":9302903,
  "accumulator":{"foo":"bar"}}
 ````
 
-The simplest usage of a reduce function is simply to get the latest object in the snapshot stream. A more advanced implementation can use a lambda architecture approach to get the latest snapshot and then retrieve all events since the snapshot and reduce them into the accumulator on the fly.
+The interface to retrieve an accumulater is simply a get request based on the name of the reduce function.
+
+````
+GET /reduce/:name
+
+{"foo":"bar"}
+````
+
+The simplest implementation of web interface might simply get the latest object in the snapshot stream. A more advanced implementation can use a lambda architecture approach to get the latest snapshot and then retrieve all events since the snapshot and reduce them into the accumulator on the fly.
 
 ### 1.4 Partitioned Reduce Function
+
+
 
 ### 1.5 Key Value Store
 
