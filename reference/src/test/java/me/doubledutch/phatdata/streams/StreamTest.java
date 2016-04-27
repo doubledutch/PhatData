@@ -95,13 +95,15 @@ public class StreamTest{
 
     @Test
     public void testRangeRequests() throws Exception{
+      List<Document> result=streams.getDocuments("range-test",0,99);
+      assertEquals(result.size(),0);
     	for(int i=0;i<99;i++){
 	    	Document doc=new Document("range-test","{\"value\":"+i+"}");
   			streams.addDocument(doc,Stream.NONE);
   		}
   		Document doc=new Document("range-test","{\"value\":99}");
   		streams.addDocument(doc);
-  		List<Document> result=streams.getDocuments("range-test",0,99);
+  		result=streams.getDocuments("range-test",0,99);
   		assertEquals(result.size(),100);
   		for(int i=0;i<100;i++){
   			assertEquals(i,result.get(i).getLocation());
@@ -119,6 +121,31 @@ public class StreamTest{
   		result=streams.getDocuments("range-test",72,72);
   		assertEquals(result.size(),1);
   		assertEquals(72,result.get(0).getLocation());
+    }
+
+    @Test
+    public void testTruncate() throws Exception{
+      for(int i=0;i<99;i++){
+        Document doc=new Document("truncate-test","{\"value\":"+i+"}");
+        streams.addDocument(doc,Stream.NONE);
+      }
+      Document doc=new Document("truncate-test","{\"value\":99}");
+      streams.addDocument(doc);
+
+      List<Document> result=streams.getDocuments("truncate-test",0,99);
+      assertEquals(result.size(),100);
+
+      streams.truncateStream("truncate-test",50);
+      result=streams.getDocuments("truncate-test",0,99);
+      assertEquals(result.size(),50);
+
+      streams.truncateStream("truncate-test",10);
+      result=streams.getDocuments("truncate-test",0,99);
+      assertEquals(result.size(),10);
+
+      streams.truncateStream("truncate-test",0);
+      result=streams.getDocuments("truncate-test",0,99);
+      assertEquals(result.size(),0);
     }
 
     @Test

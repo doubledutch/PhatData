@@ -35,8 +35,22 @@ public class Index{
 		return endLocationRange;
 	}
 
+	public long getStartLocationRange(){
+		return startLocationRange;
+	}
+
 	public boolean isFull(){
 		return lastLocation==endLocationRange;
+	}
+
+	public void truncate(long index) throws IOException{
+		if(lastLocation>index){
+			synchronized(out){
+				long offset=(index-startLocationRange)*IndexEntry.RECORD_SIZE;
+				fc.truncate(offset);
+				lastLocation=index-1;
+			}
+		}
 	}
 
 	public void commitData() throws IOException{
@@ -51,6 +65,14 @@ public class Index{
 					fc.force(true);
 				}
 			}
+		}
+	}
+
+	public void delete() throws IOException{
+		synchronized(out){
+			close();
+			File ftest=new File(filename);
+			ftest.delete();
 		}
 	}
 

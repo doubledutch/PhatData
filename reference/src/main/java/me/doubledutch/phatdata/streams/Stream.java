@@ -389,7 +389,7 @@ public class Stream implements Runnable{
 		return list;
 	}
 
-	public void truncate(long index) throws IOException{
+	public void truncate(long truncateindex) throws IOException{
 		// TODO: implement me
 		// 1. Acquire full lock
 		// 2. If index is zero - dump everything
@@ -397,6 +397,42 @@ public class Stream implements Runnable{
 		//    3.1 Truncate correct file
 		//	  3.2 Delete all later files
 		//    3.3 Possibly detect and remove full block files
+		synchronized(this){
+			// TODO: go through execution paths and make sure we can't get into a deadlock!
+			synchronized(topic){
+				if(truncateindex==0){
+					// Make a clean wipe of indexes and block files
+					for(Block block:blockMap.values()){
+						block.delete();
+					}
+					for(Index index:indexMap.values()){
+						index.delete();
+					}
+					// Reset state
+					indexMap=new Hashtable<Short,Index>();
+					blockMap=new Hashtable<Short,Block>();
+					currentBlockNumber=0;
+					currentIndexNumber=0;
+					commitedLocation=-1;
+					currentLocation=-1;
+					createNewBlock(currentBlockNumber);
+					createNewIndex(currentIndexNumber);
+					Index index=indexMap.get(currentIndexNumber);
+					currentLocation=index.getLastLocation();
+					commitedLocation=currentLocation;
+				}else{
+					Index index=indexMap.get(currentIndexNumber);
+					while(index.getStartLocationRange()>truncateindex){
+						// delete full index and remove from map
+						index.delete();
+						indexMap.remove(currentIndexNumber);
+						currentIndexNumber--;
+						index=indexMap.get(currentIndexNumber);
+					}
+					index.truncate(truncateindex);
+				}
+			}
+		}
 	}
 
 	public JSONObject toJSON() throws JSONException{

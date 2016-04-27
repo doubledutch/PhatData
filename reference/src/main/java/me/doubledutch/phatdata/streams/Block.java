@@ -10,6 +10,7 @@ import java.io.*;
 public class Block{
 	private final static int BUFFER_SIZE=512*1024;
 	// private FileDescriptor fd;
+	private String filename;
 	private FileChannel fc;
 	private FileOutputStream fout;
 	private OutputStream out;
@@ -19,6 +20,7 @@ public class Block{
 	private int write_mode;
 
 	public Block(String filename,int write_mode) throws IOException{
+		this.filename=filename;
 		fout=new FileOutputStream(filename,true);
 		out=new BufferedOutputStream(fout,BUFFER_SIZE);
 		fc=fout.getChannel();
@@ -32,6 +34,14 @@ public class Block{
 	public long getSize(){
 		synchronized(out){
 			return offset;
+		}
+	}
+
+	public void delete() throws IOException{
+		synchronized(out){
+			close();
+			File ftest=new File(filename);
+			ftest.delete();
 		}
 	}
 

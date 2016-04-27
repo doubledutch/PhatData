@@ -57,6 +57,12 @@ public class StreamAPIServlet extends HttpServlet{
 					long location=Long.parseLong(splitPath[1]);
 					Document doc=streamHandler.getDocument(topic,location);
 					out.append(doc.getStringData());
+				}else if(range.equals("_")){
+					long location=streamHandler.getOrCreateStream(topic).getCount()-1;
+					if(location>-1){
+						Document doc=streamHandler.getDocument(topic,location);
+						out.append(doc.getStringData());
+					}
 				}else if(range.endsWith("-")){
 					// Get everything from an index
 					long location=Long.parseLong(range.substring(0,range.length()-1));
@@ -115,6 +121,28 @@ public class StreamAPIServlet extends HttpServlet{
 					}
 					out.append("]");
 				}
+			}else{
+				response.sendError(HttpServletResponse.SC_NOT_FOUND,"You must specify both topic and location.");
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR ,"Internal server error");
+		}
+		return;
+	}
+
+	@Override
+	protected void doDelete(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
+		try{
+			Writer out=response.getWriter();
+			response.setContentType("application/json");
+			String uriPath=request.getRequestURI().substring(request.getServletPath().length());
+			if(uriPath.startsWith("/"))uriPath=uriPath.substring(1).trim();
+			String[] splitPath=uriPath.split("/");
+			if(splitPath.length==2){
+				String topic=splitPath[0];
+				String index=splitPath[1];
+				streamHandler.truncateStream(topic,Long.parseLong(index));
 			}else{
 				response.sendError(HttpServletResponse.SC_NOT_FOUND,"You must specify both topic and location.");
 			}

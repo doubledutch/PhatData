@@ -147,11 +147,19 @@ GET /reduce/:name/:partition
 {"foo":"bar"}
 ````
 
+In the same way as for the plain reduce service. A simple implementation of this end point could just return the latest accumulator from the accumulator stream. A more advanced version could use a lambda architecture to merge that with all events that have been added to the source stream since the last accumulator.
+
 ### 1.5 Key Value Store
 
-
+same as partitioned, but with data in the metadata chunks
 
 ### 1.6 Timeseries Index and Aggregate
+
+buckets with collections
+
+### 1.X Experimental
+
+indexing via lucene to support freeform queries
 
 ## 2. Reference Implementation
 

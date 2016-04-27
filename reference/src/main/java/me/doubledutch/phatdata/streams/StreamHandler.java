@@ -93,6 +93,7 @@ public class StreamHandler{
 	}
 
 	public void truncateStream(String topic,long index) throws IOException{
-		// TODO: implement me
+		Stream stream=getOrCreateStream(topic);
+		stream.truncate(index);
 	}
 }
