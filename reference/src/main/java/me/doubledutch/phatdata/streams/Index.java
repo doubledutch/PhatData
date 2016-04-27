@@ -44,11 +44,22 @@ public class Index{
 	}
 
 	public void truncate(long index) throws IOException{
-		if(lastLocation>index){
+		if(lastLocation>=index){
 			synchronized(out){
+				//close();
+
 				long offset=(index-startLocationRange)*IndexEntry.RECORD_SIZE;
+				System.out.println("Truncating at "+offset);
 				fc.truncate(offset);
 				lastLocation=index-1;
+				/*File ftest=new File(filename);
+		
+				FileChannel fch = new FileOutputStream(ftest, true).getChannel();
+			    fch.truncate(offset);
+				fch.close();
+				lastLocation=startLocationRange-1;
+				verifyIndex();
+				openIndex();*/
 			}
 		}
 	}
@@ -134,15 +145,19 @@ public class Index{
 	}
 
 	public List<IndexEntry> seekEntries(long startLocation,long endLocation) throws IOException,EOFException{
+		
 		if(startLocation>lastLocation)return null;
 		if(endLocation>lastLocation)endLocation=lastLocation;
+		System.out.println("\nlastLocation: "+lastLocation+" startLocation:"+startLocation+" endLocation:"+endLocation);
 		long offset=(startLocation-startLocationRange)*IndexEntry.RECORD_SIZE;
 		byte[] data=new byte[((int)(endLocation-startLocation+1))*IndexEntry.RECORD_SIZE];
 		List<IndexEntry> list=new ArrayList<IndexEntry>((int)(endLocation-startLocation+1));
+		System.out.println("Seeking to "+offset+" reading "+data.length+" in length "+fc.size());
 		synchronized(in){
 			in.seek(offset);
 			in.readFully(data);
 		}
+		System.out.println("Read completed");
 		DataInputStream inStream=new DataInputStream(new ByteArrayInputStream(data));
 		for(long i=startLocation;i<=endLocation;i++){
 			list.add(IndexEntry.read(i,inStream));

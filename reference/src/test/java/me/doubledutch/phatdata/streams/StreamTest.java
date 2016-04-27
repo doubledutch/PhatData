@@ -125,6 +125,7 @@ public class StreamTest{
 
     @Test
     public void testTruncate() throws Exception{
+      System.out.println("Begin truncate");
       for(int i=0;i<99;i++){
         Document doc=new Document("truncate-test","{\"value\":"+i+"}");
         streams.addDocument(doc,Stream.NONE);
@@ -142,10 +143,15 @@ public class StreamTest{
       streams.truncateStream("truncate-test",10);
       result=streams.getDocuments("truncate-test",0,99);
       assertEquals(result.size(),10);
+      doc=new Document("truncate-test","{\"value\":100}");
+      streams.addDocument(doc);
+      result=streams.getDocuments("truncate-test",0,100);
+      assertEquals(result.size(),11);
 
       streams.truncateStream("truncate-test",0);
       result=streams.getDocuments("truncate-test",0,99);
       assertEquals(result.size(),0);
+      System.out.println("End truncate");
     }
 
     @Test

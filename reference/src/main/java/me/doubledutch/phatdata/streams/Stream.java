@@ -430,6 +430,8 @@ public class Stream implements Runnable{
 						index=indexMap.get(currentIndexNumber);
 					}
 					index.truncate(truncateindex);
+					currentLocation=index.getLastLocation();
+					commitedLocation=currentLocation;
 				}
 			}
 		}
